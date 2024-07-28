@@ -111,7 +111,7 @@ uploaded_file = st.file_uploader("Choose an image or video...", type=["jpg", "jp
 if uploaded_file is not None:
     file_type = uploaded_file.type.split('/')[0]
     
-    col1, col2 = st.columns(2)  # Create two columns
+    col1, col2 = st.columns(2) 
 
     if file_type == 'image':
         with col1:
@@ -125,7 +125,6 @@ if uploaded_file is not None:
             with col2:
                 st.image(dst, caption='Dehazed Image', use_column_width=True)
             
-            # Convert the dehazed image to a format suitable for download
             im = Image.fromarray(dst)
             buf = io_bytes.BytesIO()
             im.save(buf, format="PNG")
@@ -148,7 +147,6 @@ if uploaded_file is not None:
             hr = HazeRemoval()
             process_video(hr, input_video_path, output_video_path)
             
-            # Display the original and processed videos side by side
             col1, col2 = st.columns(2)
             with col1:
                 st.markdown("### Original Video")
@@ -157,6 +155,5 @@ if uploaded_file is not None:
                 st.markdown("### Dehazed Video")
                 st.video(output_video_path, format='video/mp4')
             
-            # Provide the link to download the processed video
             with open(output_video_path, 'rb') as f:
                 st.download_button(label='Download Dehazed Video', data=f, file_name='dcp_dehazed_video.mp4', mime='video/mp4')
