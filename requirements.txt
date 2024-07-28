@@ -4,3 +4,4 @@ imageio
 scikit-image
 opencv-python
 Pillow
+moviepy
