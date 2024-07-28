@@ -3,11 +3,9 @@ import PIL.Image as Image
 import skimage.io as io
 import numpy as np
 import cv2
-import time
-import tempfile
-from gf import guided_filter 
 import io as io_bytes
-from moviepy.editor import VideoFileClip
+
+from gf import guided_filter 
 
 class HazeRemoval:
     def __init__(self, omega=0.95, t0=0.1, radius=7, r=20, eps=0.001):
@@ -93,67 +91,32 @@ class HazeRemoval:
         self.recover()
         return self.dst
 
-def process_video(hr, input_video_path, output_video_path):
-    clip = VideoFileClip(input_video_path)
-    
-    def process_frame(frame):
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        dehazed_frame = hr.process_frame(frame)
-        return cv2.cvtColor(dehazed_frame, cv2.COLOR_BGR2RGB)
-    
-    processed_clip = clip.fl_image(process_frame)
-    processed_clip.write_videofile(output_video_path, codec='libx264')
-
 st.title("Dark Channel Prior Haze Removal Application")
 
-uploaded_file = st.file_uploader("Choose an image or video...", type=["jpg", "jpeg", "png", "mp4", "avi", "mov"])
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    file_type = uploaded_file.type.split('/')[0]
-    
-    col1, col2 = st.columns(2) 
+    col1, col2 = st.columns(2)
 
-    if file_type == 'image':
-        with col1:
-            img = Image.open(uploaded_file)
-            st.image(img, caption='Uploaded Image', use_column_width=True)
+    img = Image.open(uploaded_file)
+    with col1:
+        st.image(img, caption='Uploaded Image', use_column_width=True)
+
+    if st.button("Remove Haze"):
+        hr = HazeRemoval()
+        dst = hr.process(uploaded_file)
         
-        if st.button("Remove Haze"):
-            hr = HazeRemoval()
-            dst = hr.process(uploaded_file)
-            
-            with col2:
-                st.image(dst, caption='Dehazed Image', use_column_width=True)
-            
-            im = Image.fromarray(dst)
-            buf = io_bytes.BytesIO()
-            im.save(buf, format="PNG")
-            byte_im = buf.getvalue()
-
-            st.download_button(
-                label="Download Dehazed Image",
-                data=byte_im,
-                file_name="dehazed_image.png",
-                mime="image/png"
-            )
-
-    elif file_type == 'video':
-        tfile = tempfile.NamedTemporaryFile(delete=False)
-        tfile.write(uploaded_file.read())
-        input_video_path = tfile.name
-        output_video_path = 'dcp_dehazed_video.mp4'
+        with col2:
+            st.image(dst, caption='Dehazed Image', use_column_width=True)
         
-        if st.button('Remove Haze'):
-            hr = HazeRemoval()
-            process_video(hr, input_video_path, output_video_path)
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("### Original Video")
-                st.video(input_video_path, format='video/mp4')
-            with col2:
-                st.markdown("### Dehazed Video")
-                st.video(output_video_path, format='video/mp4')
-            
-            with open(output_video_path, 'rb') as f:
-                st.download_button(label='Download Dehazed Video', data=f, file_name='dcp_dehazed_video.mp4', mime='video/mp4')
+        im = Image.fromarray(dst)
+        buf = io_bytes.BytesIO()
+        im.save(buf, format="PNG")
+        byte_im = buf.getvalue()
+
+        st.download_button(
+            label="Download Dehazed Image",
+            data=byte_im,
+            file_name="dehazed_image.png",
+            mime="image/png"
+        )
