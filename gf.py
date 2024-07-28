@@ -168,28 +168,3 @@ def guided_filter(I, p, r, eps, s=None):
     for ch in range(p3.shape[2]):
         out[:,:,ch] = _gf_colorgray(I, p3[:,:,ch], r, eps, s)
     return np.squeeze(out) if p.ndim == 2 else out
-
-
-def test_gf():
-    import imageio
-    cat = imageio.imread('cat.bmp').astype(np.float32) / 255
-    tulips = imageio.imread('tulips.bmp').astype(np.float32) / 255
-
-    r = 8
-    eps = 0.05
-
-    cat_smoothed = guided_filter(cat, cat, r, eps)
-    cat_smoothed_s4 = guided_filter(cat, cat, r, eps, s=4)
-
-    imageio.imwrite('cat_smoothed.png', cat_smoothed)
-    imageio.imwrite('cat_smoothed_s4.png', cat_smoothed_s4)
-
-    tulips_smoothed4s = np.zeros_like(tulips)
-    for i in range(3):
-        tulips_smoothed4s[:,:,i] = guided_filter(tulips, tulips[:,:,i], r, eps, s=4)
-    imageio.imwrite('tulips_smoothed4s.png', tulips_smoothed4s)
-
-    tulips_smoothed = np.zeros_like(tulips)
-    for i in range(3):
-        tulips_smoothed[:,:,i] = guided_filter(tulips, tulips[:,:,i], r, eps)
-    imageio.imwrite('tulips_smoothed.png', tulips_smoothed)
